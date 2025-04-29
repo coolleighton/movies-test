@@ -6,6 +6,9 @@ import Header from "./components/Header";
 import Trailer from "./components/Trailer";
 import Reviews from "./components/Reviews";
 import NotFound from "./components/NotFound";
+import RequireAuth from "./components/RequireAuth";
+import Login from "./components/LoginPage";
+import Register from "./components/RegisterPage";
 
 import axios from "axios";
 
@@ -59,14 +62,18 @@ function App() {
           <Route
             path="/Reviews/:movieId"
             element={
-              <Reviews
-                getMovieData={getMovieData}
-                movie={movie}
-                reviews={reviews}
-                setReviews={setReviews}
-              />
+              <RequireAuth>
+                <Reviews
+                  getMovieData={getMovieData}
+                  movie={movie}
+                  reviews={reviews}
+                  setReviews={setReviews}
+                />
+              </RequireAuth>
             }
           />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
