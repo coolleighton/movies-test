@@ -5,7 +5,7 @@ const Trailer = () => {
   const { ytTrailerId } = useParams<{ ytTrailerId: string | undefined }>();
 
   return (
-    <div className="w-full h-screen flex justify-center items-center bg-black">
+    <div className="w-full h-screen flex justify-center items-center pt-12 bg-black">
       {ytTrailerId ? (
         <ReactPlayer
           controls

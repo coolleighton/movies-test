@@ -1,43 +1,118 @@
 package dev.leighton.movies;
 
+import java.util.Arrays;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
+  @Autowired
+  private CustomUserDetailsService userDetailsService;
+
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http)
     throws Exception {
     http
-      .csrf(csrf -> csrf.disable()) // Disable CSRF for APIs
-      .authorizeHttpRequests(
-        auth ->
-          auth
-            .requestMatchers("/api/auth/**")
-            .permitAll() // Allow open access to authentication routes
-            .anyRequest()
-            .authenticated() // All other requests need authentication
+      .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+      .csrf(csrf -> csrf.disable())
+      .authorizeHttpRequests(auth ->
+        auth
+          .requestMatchers("/api/auth/**")
+          .permitAll()
+          .anyRequest()
+          .authenticated()
       )
-      .httpBasic(httpBasic -> {}) // Configure HTTP Basic authentication with empty lambda
-      .formLogin(
-        form -> form.loginPage("/login").permitAll() // Enable custom login page
+      // Configure session management - use stateful sessions
+      .sessionManagement(session ->
+        session.sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
       )
-      .logout(
-        logout -> logout.logoutUrl("/logout").permitAll() // Configure logout endpoint
+      // Return 401 instead of redirecting for unauthenticated API requests
+      .exceptionHandling(e ->
+        e.authenticationEntryPoint(
+          new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)
+        )
+      )
+      // Configure form login for API authentication
+      .formLogin(form ->
+        form
+          .loginProcessingUrl("/api/auth/login")
+          .successHandler((request, response, authentication) -> {
+            response.setStatus(HttpStatus.OK.value());
+            response.getWriter().write("{\"message\": \"Login successful\"}");
+            response.setContentType("application/json");
+          })
+          .failureHandler((request, response, exception) -> {
+            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+            response
+              .getWriter()
+              .write("{\"error\": \"" + exception.getMessage() + "\"}");
+            response.setContentType("application/json");
+          })
+      )
+      .logout(logout ->
+        logout
+          .logoutUrl("/api/auth/logout")
+          .logoutSuccessHandler((request, response, authentication) -> {
+            response.setStatus(HttpStatus.OK.value());
+            response.getWriter().write("{\"message\": \"Logout successful\"}");
+            response.setContentType("application/json");
+          })
+          .permitAll()
       );
 
     return http.build();
   }
 
   @Bean
+  public CorsConfigurationSource corsConfigurationSource() {
+    CorsConfiguration configuration = new CorsConfiguration();
+    configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
+    configuration.setAllowedMethods(
+      Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS")
+    );
+    configuration.setAllowedHeaders(Arrays.asList("*"));
+    configuration.setAllowCredentials(true);
+
+    UrlBasedCorsConfigurationSource source =
+      new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", configuration);
+    return source;
+  }
+
+  @Bean
   public PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder(); // Use BCrypt password encoding
+    return new BCryptPasswordEncoder();
+  }
+
+  @Bean
+  public DaoAuthenticationProvider authenticationProvider() {
+    DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+    provider.setUserDetailsService(userDetailsService);
+    provider.setPasswordEncoder(passwordEncoder());
+    return provider;
+  }
+
+  @Bean
+  public AuthenticationManager authenticationManager(
+    AuthenticationConfiguration authConfig
+  ) throws Exception {
+    return authConfig.getAuthenticationManager();
   }
 }

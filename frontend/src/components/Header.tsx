@@ -2,7 +2,7 @@ import { NavLink } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "./AuthContext";
 import { useNavigate } from "react-router-dom";
-import "@fortawesome/fontawesome-free/css/all.min.css"; // You can also put this in main.jsx or App.tsx
+import "@fortawesome/fontawesome-free/css/all.min.css";
 
 const Header = () => {
   const { username, logout } = useContext(AuthContext);
@@ -48,32 +48,36 @@ const Header = () => {
           >
             Home
           </NavLink>
-          <NavLink
-            to="/login"
-            className={({ isActive }) =>
-              `text-white hover:text-yellow-400 transition ${
-                isActive ? "text-yellow-400" : ""
-              }`
-            }
-          >
-            Login
-          </NavLink>
-          <NavLink
-            to="/register"
-            className={({ isActive }) =>
-              `text-white hover:text-yellow-400 transition ${
-                isActive ? "text-yellow-400" : ""
-              }`
-            }
-          >
-            Register
-          </NavLink>
 
-          {/* Only show logout if logged in */}
+          {!username && (
+            <>
+              <NavLink
+                to="/login"
+                className={({ isActive }) =>
+                  `text-white hover:text-yellow-400 transition ${
+                    isActive ? "text-yellow-400" : ""
+                  }`
+                }
+              >
+                Login
+              </NavLink>
+              <NavLink
+                to="/register"
+                className={({ isActive }) =>
+                  `text-white hover:text-yellow-400 transition ${
+                    isActive ? "text-yellow-400" : ""
+                  }`
+                }
+              >
+                Register
+              </NavLink>
+            </>
+          )}
+
           {username && (
             <button
               onClick={handleLogout}
-              className="text-white hover:text-red-400 transition"
+              className="text-white hover:text-red-400 transition cursor-pointer"
             >
               Logout
             </button>

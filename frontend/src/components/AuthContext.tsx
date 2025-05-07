@@ -1,36 +1,93 @@
-import { createContext, useState, ReactNode } from "react";
+import { createContext, useState, useEffect, ReactNode } from "react";
+import api from "./Api";
 
 interface AuthContextType {
-  username: string;
-  password: string;
-  login: (username: string, password: string) => void;
-  logout: () => void;
+  isAuthenticated: boolean;
+  username: string | null;
+  loading: boolean;
+  login: (username: string) => void;
+  logout: () => Promise<void>;
+  checkAuthStatus: () => Promise<boolean>;
 }
 
 export const AuthContext = createContext<AuthContextType>({
-  username: "",
-  password: "",
+  isAuthenticated: false,
+  username: null,
+  loading: true,
   login: () => {},
-  logout: () => {},
+  logout: async () => {},
+  checkAuthStatus: async () => false,
 });
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+interface AuthProviderProps {
+  children: ReactNode;
+}
 
-  const login = (newUsername: string, newPassword: string) => {
-    setUsername(newUsername);
-    setPassword(newPassword);
+export const AuthProvider = ({ children }: AuthProviderProps) => {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [username, setUsername] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  // Check if user is authenticated on initial load
+  useEffect(() => {
+    const checkAuth = async () => {
+      await checkAuthStatus();
+      setLoading(false);
+    };
+
+    checkAuth();
+  }, []);
+
+  // Function to check authentication status with the backend
+  const checkAuthStatus = async (): Promise<boolean> => {
+    try {
+      const response = await api.get("/api/auth/user");
+      if (response.data && response.data.username) {
+        setIsAuthenticated(true);
+        setUsername(response.data.username);
+        return true;
+      } else {
+        setIsAuthenticated(false);
+        setUsername(null);
+        return false;
+      }
+    } catch (error) {
+      console.error("Auth check failed:", error);
+      setIsAuthenticated(false);
+      setUsername(null);
+      return false;
+    }
   };
 
-  const logout = () => {
-    setUsername("");
-    setPassword("");
+  const login = (username: string) => {
+    setIsAuthenticated(true);
+    setUsername(username);
+  };
+
+  const logout = async () => {
+    try {
+      await api.post("/api/auth/logout");
+      setIsAuthenticated(false);
+      setUsername(null);
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ username, password, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        isAuthenticated,
+        username,
+        loading,
+        login,
+        logout,
+        checkAuthStatus,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
+
+export default AuthProvider;

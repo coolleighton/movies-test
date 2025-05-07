@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
 import Home from "./components/Home";
@@ -9,8 +9,8 @@ import NotFound from "./components/NotFound";
 import RequireAuth from "./components/RequireAuth";
 import Login from "./components/LoginPage";
 import Register from "./components/RegisterPage";
-
-import axios from "axios";
+import api from "./components/Api";
+import { AuthProvider } from "./components/AuthContext";
 
 type Movie = {
   imdbId: string;
@@ -26,21 +26,27 @@ function App() {
   const [movie, setMovie] = useState<Movie | null>(null);
   const [reviews, setReviews] = useState<{ body: string }[]>([]);
 
+  // Fetch movies
   const getMovies = async () => {
     try {
-      const response = await axios.get("/api/v1/movies");
+      const response = await api.get("/api/v1/movies");
       setMovies(response.data);
+      console.log(response.data);
     } catch (err) {
-      console.log(err);
+      console.error("API error:", err);
     }
   };
 
+  // UseEffect to fetch movies on initial load
+  useEffect(() => {
+    getMovies();
+  }, []);
+
+  // Fetch movie data for specific movie
   const getMovieData = useCallback(async (movieId: string) => {
     try {
-      const response = await axios.get(`/api/v1/movies/${movieId}`);
+      const response = await api.get(`/api/v1/movies/${movieId}`);
       console.log(response.data);
-      console.log(response.data.reviewIds);
-
       setMovie(response.data);
       setReviews(response.data.reviewIds);
     } catch (error) {
@@ -48,36 +54,37 @@ function App() {
     }
   }, []);
 
-  useEffect(() => {
-    getMovies();
-  }, []);
-
   return (
-    <div className="App min-h-screen bg-gray-900 text-white">
-      <Header />
-      <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route path="/" element={<Home movies={movies} />} />
-          <Route path="/Trailer/:ytTrailerId" element={<Trailer />} />
-          <Route
-            path="/Reviews/:movieId"
-            element={
-              <RequireAuth>
-                <Reviews
-                  getMovieData={getMovieData}
-                  movie={movie}
-                  reviews={reviews}
-                  setReviews={setReviews}
-                />
-              </RequireAuth>
-            }
-          />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="*" element={<NotFound />} />
-        </Route>
-      </Routes>
-    </div>
+    <AuthProvider>
+      <div className="App min-h-screen bg-gray-900 text-white">
+        <Header />
+        <Routes>
+          <Route path="/" element={<Layout />}>
+            <Route
+              path="/"
+              element={<Home movies={movies} setMovies={setMovies} />}
+            />
+            <Route path="/Trailer/:ytTrailerId" element={<Trailer />} />
+            <Route
+              path="/Reviews/:movieId"
+              element={
+                <RequireAuth>
+                  <Reviews
+                    getMovieData={getMovieData}
+                    movie={movie}
+                    reviews={reviews}
+                    setReviews={setReviews}
+                  />
+                </RequireAuth>
+              }
+            />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="*" element={<NotFound />} />
+          </Route>
+        </Routes>
+      </div>
+    </AuthProvider>
   );
 }
 
