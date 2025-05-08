@@ -2,6 +2,7 @@ package dev.leighton.movies;
 
 import java.util.Arrays;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -25,6 +26,9 @@ public class SecurityConfig {
 
   @Autowired
   private CustomUserDetailsService userDetailsService;
+
+  @Value("${FRONTEND_URL}")
+  private String frontendUrl;
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http)
@@ -83,7 +87,7 @@ public class SecurityConfig {
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
+    configuration.setAllowedOrigins(Arrays.asList(frontendUrl));
     configuration.setAllowedMethods(
       Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS")
     );
