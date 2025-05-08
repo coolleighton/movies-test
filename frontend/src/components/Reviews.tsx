@@ -1,7 +1,7 @@
 import { useEffect, useRef, FormEvent } from "react";
 import { useParams } from "react-router-dom";
 import ReviewForm from "./ReviewForm";
-import axios from "axios";
+import api from "./Api";
 
 type Review = {
   body: string;
@@ -42,7 +42,7 @@ const Reviews = ({
     if (!rev || !movieId) return;
 
     try {
-      await axios.post("/api/v1/reviews", {
+      await api.post("/api/v1/reviews", {
         reviewBody: rev.value,
         imdbId: movieId,
       });
