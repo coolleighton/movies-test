@@ -1,14 +1,28 @@
 import { NavLink } from "react-router-dom";
-import { useContext } from "react";
+import { Dispatch, SetStateAction, useContext } from "react";
 import { AuthContext } from "./AuthContext";
 import { useNavigate } from "react-router-dom";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
-const Header = () => {
+type Movie = {
+  imdbId: string;
+  title: string;
+  poster: string;
+  trailerLink: string;
+  backdrops: string[];
+  reviews: { body: string }[];
+};
+
+type HeaderProps = {
+  setMovies: Dispatch<SetStateAction<Movie[]>>;
+};
+
+const Header = ({ setMovies }: HeaderProps) => {
   const { username, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleLogout = () => {
+    setMovies([]);
     logout();
     navigate("/login");
   };
@@ -31,9 +45,7 @@ const Header = () => {
           htmlFor="nav-toggle"
           className="cursor-pointer lg:hidden text-white"
         >
-          <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24">
-            <path d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
+          III
         </label>
 
         {/* Navigation */}

@@ -33,7 +33,18 @@ const Home = ({ setMovies, movies }: HomeProps) => {
     getMovies();
   }, []);
 
-  return <Hero movies={movies} />;
+  if (movies.length > 1) {
+    return <Hero movies={movies} />;
+  } else
+    return (
+      <>
+        <div className="w-full h-screen flex flex-row justify-center items-center">
+          <p className="flex flex-col gap-4 px-4 py-10 text-2xl w-[50%] bg-blue-950 rounded-3xl text-center">
+            Please login to view content
+          </p>
+        </div>
+      </>
+    );
 };
 
 export default Home;
