@@ -29,11 +29,6 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-/**
- * This class configures Spring Security for the application.
- * It defines security rules, authentication methods, CORS settings,
- * and other security-related configurations.
- */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
