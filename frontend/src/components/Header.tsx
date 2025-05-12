@@ -15,14 +15,18 @@ type Movie = {
 
 type HeaderProps = {
   setMovies: Dispatch<SetStateAction<Movie[]>>;
+  setMovie: Dispatch<SetStateAction<Movie[]>>;
+  setReviews: Dispatch<SetStateAction<Movie[]>>;
 };
 
-const Header = ({ setMovies }: HeaderProps) => {
+const Header = ({ setMovies, setMovie, setReviews }: HeaderProps) => {
   const { username, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleLogout = () => {
     setMovies([]);
+    setMovie([]);
+    setReviews([]);
     logout();
     navigate("/login");
   };

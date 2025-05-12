@@ -57,7 +57,11 @@ function App() {
   return (
     <AuthProvider>
       <div className="App min-h-screen bg-gray-900 text-white">
-        <Header setMovies={setMovies} />
+        <Header
+          setMovies={setMovies}
+          setMovie={setMovie}
+          setReviews={setReviews}
+        />
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route

@@ -71,7 +71,7 @@ public class SecurityConfig {
       .authorizeHttpRequests(auth ->
         auth
           // Public endpoints that don't require authentication
-          .requestMatchers("/api/auth/**")
+          .requestMatchers("/api/auth/**", "/health")
           .permitAll()
           // Allow OPTIONS preflight requests for CORS
           .requestMatchers(HttpMethod.OPTIONS, "/**")
