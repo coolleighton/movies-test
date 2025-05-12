@@ -10,7 +10,7 @@ const api = axios.create({
   },
 });
 
-// Add this to your api.tsx
+// log requests
 api.interceptors.request.use(
   (config) => {
     console.log("Request config:", config);
