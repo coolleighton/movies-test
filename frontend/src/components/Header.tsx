@@ -15,8 +15,8 @@ type Movie = {
 
 type HeaderProps = {
   setMovies: Dispatch<SetStateAction<Movie[]>>;
-  setMovie: Dispatch<SetStateAction<Movie[]>>;
-  setReviews: Dispatch<SetStateAction<Movie[]>>;
+  setMovie: Dispatch<SetStateAction<Movie | null>>;
+  setReviews: Dispatch<SetStateAction<{ body: string }[]>>;
 };
 
 const Header = ({ setMovies, setMovie, setReviews }: HeaderProps) => {
@@ -25,7 +25,7 @@ const Header = ({ setMovies, setMovie, setReviews }: HeaderProps) => {
 
   const handleLogout = () => {
     setMovies([]);
-    setMovie([]);
+    setMovie(null);
     setReviews([]);
     logout();
     navigate("/login");
