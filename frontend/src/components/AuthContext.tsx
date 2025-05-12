@@ -71,6 +71,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       setUsername(null);
     } catch (error) {
       console.error("Logout failed:", error);
+      setIsAuthenticated(false);
+      setUsername(null);
     }
   };
 
